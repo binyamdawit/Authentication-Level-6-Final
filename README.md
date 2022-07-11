@@ -12,6 +12,6 @@ In this project I provided cookies and sessions to be made in the browser once t
 The complexity of the encryption is very much hard to decrypt and the data is stored into mongodb database.
 I also provided the use of OAuth 2.0, which user is granted a third-party web site or application access to the user's 
 protected resources.
-#New Feature
+# New Feature
 I also added for user's to submit a secret which then will be published and shown in the secret's page
 ![Animations](https://user-images.githubusercontent.com/106253049/178099589-9e19d347-d159-4d9d-a5d8-698548e36e73.gif)

@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   googleId: String,
-  secret: String,
+  secret: Array,
 });
 
 //use to hash and salt passwords and save user into mongo database
@@ -118,19 +118,21 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.get("/secrets", (req, res) => {
-  User.find({ secret: { $ne: null } }, function (err, foundUsers) {
-    if (err) {
-      console.log(err);
-    } else {
-      if (foundUsers) {
-        res.render("secrets", { usersWithSecrets: foundUsers });
+app.get("/secrets", function (req, res) {
+  User.find({ secret: { $ne: null } }, function (err, users) {
+    if (!err) {
+      if (users) {
+        res.render("secrets", { usersWithSecrets: users });
+      } else {
+        console.log(err);
       }
+    } else {
+      console.log(err);
     }
   });
 });
 
-app.get("/submit", (req, res) => {
+app.get("/submit", function (req, res) {
   if (req.isAuthenticated()) {
     res.render("submit");
   } else {
@@ -138,21 +140,17 @@ app.get("/submit", (req, res) => {
   }
 });
 
-app.post("/submit", (req, res) => {
-  const submittedSecret = req.body.secret;
-
-  User.findById(req.user.id, function (err, foundUser) {
-    if (err) {
-      console.log(err);
-    } else {
-      if (foundUser) {
-        foundUser.secret = submittedSecret;
-        foundUser.save(function () {
-          res.redirect("/secrets");
-        });
-      }
-    }
-  });
+app.post("/submit", function (req, res) {
+  if (req.isAuthenticated()) {
+    User.findById(req.user.id, function (err, user) {
+      user.secret.push(req.body.secret);
+      user.save(function () {
+        res.redirect("/secrets");
+      });
+    });
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/logout", function (req, res) {
@@ -161,7 +159,7 @@ app.get("/logout", function (req, res) {
   });
 });
 
-app.post("/register", (req, res) => {
+app.post("/register", function (req, res) {
   User.register(
     { username: req.body.username },
     req.body.password,
@@ -178,10 +176,10 @@ app.post("/register", (req, res) => {
   );
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", function (req, res) {
   const user = new User({
     username: req.body.username,
-    passport: req.body.password,
+    password: req.body.password,
   });
 
   req.login(user, function (err) {
